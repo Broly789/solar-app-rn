@@ -1,6 +1,7 @@
 import { useSignIn } from "@clerk/expo";
 import { type Href, Link, useRouter } from "expo-router";
 import { styled } from "nativewind";
+import { usePostHog } from "posthog-react-native";
 import React, { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
@@ -10,6 +11,7 @@ const SafeAreaView = styled(RNSafeAreaView);
 export default function SignInPage() {
   const { signIn, errors, fetchStatus } = useSignIn();
   const router = useRouter();
+  const posthog = usePostHog();
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
@@ -22,8 +24,13 @@ export default function SignInPage() {
   const passwordValid = password.length > 0;
   const formValid = emailAddress.length > 0 && passwordValid && emailValid;
 
+
+
   const handleSubmit = async () => {
     if (!formValid) return;
+
+    posthog?.capture('sign_in_attempt', { email: emailAddress });
+
     const { error } = await signIn.password({
       emailAddress,
       password,
@@ -31,10 +38,15 @@ export default function SignInPage() {
 
     if (error) {
       console.error(JSON.stringify(error, null, 2));
+      posthog?.capture('sign_in_failed', {
+        email: emailAddress,
+        error_message: error.message
+      });
       return;
     }
 
     if (signIn.status === "complete") {
+      posthog?.capture('sign_in_success', { email: emailAddress });
       await signIn.finalize({
         navigate: ({ session, decorateUrl }) => {
           if (session?.currentTask) {
@@ -42,7 +54,7 @@ export default function SignInPage() {
             return;
           }
 
-          const url = decorateUrl('/(tabs)');
+          const url = decorateUrl('/');
           if (url.startsWith('http')) {
             // Only use window.location on web platform
             if (typeof window !== 'undefined' && window.location) {

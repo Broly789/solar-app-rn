@@ -9,7 +9,8 @@ import { formatCurrency } from "@/lib/utils";
 import { useUser } from "@clerk/expo";
 import dayjs from "dayjs";
 import { styled } from "nativewind";
-import { useState } from "react";
+import { usePostHog } from "posthog-react-native";
+import { useEffect, useState } from "react";
 import { FlatList, Image, Text, View } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 
@@ -17,6 +18,31 @@ const SafeAreaView = styled(RNSafeAreaView);
 export default function Index() {
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<string | null>(null)
   const { user } = useUser();
+  const posthog = usePostHog()
+  useEffect(() => {
+    posthog?.capture("home_open", {
+      email: user?.primaryEmailAddress?.emailAddress || '',
+    })
+  }, [posthog])
+
+  const handleSubscriptionPress = (item: Subscription) => {
+    const isExpanding = expandedSubscriptionId !== item.id;
+    setExpandedSubscriptionId((currentId) => (currentId === item.id ? null : item.id));
+    posthog.capture(isExpanding ? 'subscription_expanded' : 'subscription_collapsed', {
+      subscription_name: item.name,
+      subscription_id: item.id,
+    });
+  };
+
+  // const handleCreateSubscription = (newSubscription: Subscription) => {
+  //     addSubscription(newSubscription);
+  //     posthog.capture('subscription_created', {
+  //         subscription_name: newSubscription.name,
+  //         subscription_price: newSubscription.price,
+  //         subscription_frequency: newSubscription.frequency,
+  //         subscription_category: newSubscription.category,
+  //     });
+  // };
 
   return (
     <SafeAreaView className="flex-1 bg-background p-5">
@@ -27,9 +53,9 @@ export default function Index() {
               <View className="home-user">
                 <Image source={user?.imageUrl ? { uri: user.imageUrl } : avatar} className="home-avatar" resizeMode="contain" />
                 <View>
-                  <Text className="home-user-name">{user?.fullName}</Text>
-                  <Text className="ml-4 text-sm text-text-secondary">
-                    {user?.primaryEmailAddress?.emailAddress || ''}
+                  <Text className="home-user-name">{user?.fullName || 'John Doe'}</Text>
+                  <Text className="ml-4 text-xs text-text-secondary">
+                    {user?.primaryEmailAddress?.emailAddress || 'user@example.com'}
                   </Text>
                 </View>
               </View>
@@ -62,7 +88,7 @@ export default function Index() {
           ({ item }) => <SubscriptionCard
             {...item}
             expanded={expandedSubscriptionId === item.id}
-            onPress={() => setExpandedSubscriptionId((currentId) => currentId === item.id ? null : item.id)}
+            onPress={() => handleSubscriptionPress(item)}
           />
         }
         extraData={expandedSubscriptionId}

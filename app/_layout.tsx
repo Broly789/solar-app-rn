@@ -1,10 +1,13 @@
 import "@/global.css";
+import { posthog } from "@/src/config/posthog";
 import { ClerkProvider, useAuth } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
+import { PostHogProvider } from 'posthog-react-native';
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
+
 
 // Prevent the splash screen from auto-hiding before fonts load
 SplashScreen.preventAutoHideAsync();
@@ -54,8 +57,16 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      <RootLayoutContent />
-    </ClerkProvider>
+    <PostHogProvider client={posthog}
+      autocapture={{
+        captureScreens: false,
+        captureTouches: true,
+        propsToCapture: ['testID'],
+      }}      // usually 'https://us.i.posthog.com' or 'https://eu.i.posthog.com'
+    >
+      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+        <RootLayoutContent />
+      </ClerkProvider>
+    </PostHogProvider>
   );
 }

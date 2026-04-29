@@ -1,6 +1,7 @@
 import { useSignUp } from "@clerk/expo";
 import { type Href, Link, useRouter } from "expo-router";
 import { styled } from "nativewind";
+import { usePostHog } from "posthog-react-native";
 import React, { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
@@ -10,6 +11,7 @@ const SafeAreaView = styled(RNSafeAreaView);
 export default function SignUpPage() {
   const { signUp, errors, fetchStatus } = useSignUp();
   const router = useRouter();
+  const posthog = usePostHog();
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
@@ -26,9 +28,13 @@ export default function SignUpPage() {
   const formValid =
     emailAddress.length > 0 && passwordValid && emailValid;
 
+
+
   // 提交注册
   const handleSubmit = async () => {
     if (!formValid) return;
+
+    posthog?.capture('sign_up_attempt', { email: emailAddress });
 
     const { error } = await signUp.create({
       emailAddress,
@@ -37,10 +43,15 @@ export default function SignUpPage() {
 
     if (error) {
       console.error(JSON.stringify(error, null, 2));
+      posthog?.capture('sign_up_failed', {
+        email: emailAddress,
+        error_message: error.message,
+      });
       return;
     }
 
     // 发送邮箱验证码
+    posthog?.capture('sign_up_success', { email: emailAddress });
     await signUp.verifications.sendEmailCode();
     startResendCountdown();
   };
