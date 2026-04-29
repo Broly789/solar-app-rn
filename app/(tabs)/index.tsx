@@ -1,11 +1,12 @@
 import ListHeading from "@/components/ListHeading";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import UpcomingSubscriptionCard from "@/components/UpcomingSubscriptionCard";
-import { HOME_BALANCE, HOME_SUBSCRIPTIONS, HOME_USER, UPCOMING_SUBSCRIPTIONS } from "@/constants/data";
+import { HOME_BALANCE, HOME_SUBSCRIPTIONS, UPCOMING_SUBSCRIPTIONS } from "@/constants/data";
 import { icons } from "@/constants/icons";
 import { avatar } from "@/constants/image";
 import "@/global.css";
 import { formatCurrency } from "@/lib/utils";
+import { useUser } from "@clerk/expo";
 import dayjs from "dayjs";
 import { styled } from "nativewind";
 import { useState } from "react";
@@ -15,6 +16,7 @@ import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 const SafeAreaView = styled(RNSafeAreaView);
 export default function Index() {
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<string | null>(null)
+  const { user } = useUser();
 
   return (
     <SafeAreaView className="flex-1 bg-background p-5">
@@ -23,8 +25,13 @@ export default function Index() {
           <>
             <View className="home-header">
               <View className="home-user">
-                <Image source={avatar} className="home-avatar" resizeMode="contain" />
-                <Text className="home-user-name">{HOME_USER.name}</Text>
+                <Image source={user?.imageUrl ? { uri: user.imageUrl } : avatar} className="home-avatar" resizeMode="contain" />
+                <View>
+                  <Text className="home-user-name">{user?.fullName}</Text>
+                  <Text className="ml-4 text-sm text-text-secondary">
+                    {user?.primaryEmailAddress?.emailAddress || 'user@example.com'}
+                  </Text>
+                </View>
               </View>
               <Image source={icons.add} className="home-add-icon" />
             </View>

@@ -417,4 +417,20 @@
     .category-chip-text-active {
         @apply text-accent;
     }
+
+    .settings-container {
+        @apply flex-1 gap-3;
+    }
+
+    .settings-title {
+        @apply mb-5 text-2xl font-sans-bold text-primary;
+    }
+
+    .settings-button {
+        @apply mt-2 items-center rounded-2xl bg-destructive py-3 px-6;
+    }
+
+    .settings-button-text {
+        @apply text-base font-sans-bold text-background;
+    }
 }
