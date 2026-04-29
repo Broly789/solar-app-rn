@@ -57,12 +57,12 @@ export default function SignUpPage() {
             return;
           }
 
-          const url = decorateUrl("/(tabs)");
+          const url = decorateUrl("/");
           if (url.startsWith("http")) {
             if (typeof window !== "undefined" && window.location) {
               window.location.href = url;
             } else {
-              router.replace("/(tabs)" as Href);
+              router.replace("/" as Href);
             }
           } else {
             router.replace(url as Href);
