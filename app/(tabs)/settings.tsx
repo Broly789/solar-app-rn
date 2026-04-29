@@ -14,7 +14,13 @@ const Settings = () => {
                 <Text className="settings-title">Settings</Text>
                 <Pressable
                     className="settings-button"
-                    onPress={() => signOut()}
+                    onPress={async () => {
+                        try {
+                            await signOut();
+                        } catch (error) {
+                            console.error("Failed to sign out", error);
+                        }
+                    }}
                 >
                     <Text className="settings-button-text">Sign Out</Text>
                 </Pressable>

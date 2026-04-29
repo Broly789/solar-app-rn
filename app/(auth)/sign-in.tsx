@@ -1,7 +1,7 @@
 import { useSignIn } from "@clerk/expo";
 import { type Href, Link, useRouter } from "expo-router";
 import { styled } from "nativewind";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 
@@ -83,9 +83,6 @@ export default function SignInPage() {
             return;
           }
 
-
-
-
           const url = decorateUrl('/(tabs)');
           if (url.startsWith('http')) {
             // Only use window.location on web platform
@@ -117,16 +114,16 @@ export default function SignInPage() {
 
   const startResendCountdown = () => {
     setResendCountdown(60);
-    const interval = setInterval(() => {
-      setResendCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
   };
+  useEffect(() => {
+    let interval: any;
+    if (resendCountdown > 0) {
+      interval = setInterval(() => {
+        setResendCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendCountdown]);
 
   if (signIn.status === "needs_client_trust") {
     return (
@@ -247,6 +244,7 @@ export default function SignInPage() {
                   placeholder="Enter your password"
                   placeholderTextColor="#999"
                   secureTextEntry={true}
+                  onBlur={() => setPasswordTouched(true)}
                   onChangeText={(password) => setPassword(password)}
                 />
                 {passwordTouched && !passwordValid && (

@@ -29,7 +29,7 @@ export default function Index() {
                 <View>
                   <Text className="home-user-name">{user?.fullName}</Text>
                   <Text className="ml-4 text-sm text-text-secondary">
-                    {user?.primaryEmailAddress?.emailAddress || 'user@example.com'}
+                    {user?.primaryEmailAddress?.emailAddress || ''}
                   </Text>
                 </View>
               </View>

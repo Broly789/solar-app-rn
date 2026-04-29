@@ -35,9 +35,8 @@ function RootLayoutContent() {
   }, [fontLoaded, fontError]);
 
   if (fontError) {
-    console.error('Font loading error:', fontError);
+    throw fontError;
   }
-
   if (!fontLoaded || !isLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
