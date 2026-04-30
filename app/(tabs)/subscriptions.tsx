@@ -55,7 +55,7 @@ const Subscriptions = () => {
                     keyboardDismissMode="on-drag"
                     removeClippedSubviews={false}  // 👈 这个是关键！
                     ListHeaderComponent={
-                        <View className="px-5 pt-5 pb-3">
+                        <View className="pt-5 pb-3">
                             <Text className="text-2xl font-bold text-text mb-4">All Subscriptions</Text>
                             <View className="relative">
                                 <TextInput
