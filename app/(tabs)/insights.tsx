@@ -113,9 +113,11 @@ export default function Insights() {
                         )}
                     </View>
                 </View>
-                <View className="mt-5">
-                    <SubscriptionCard {...subscriptions[0]} color="transparent" isIcon={false} expanded={false} onPress={() => { }} />
-                </View>
+                {subscriptions.length > 0 && (
+                    <View className="mt-5">
+                        <SubscriptionCard {...subscriptions[0]} color="transparent" isIcon={false} expanded={false} onPress={() => { }} />
+                    </View>
+                )}
             </View>
             <ListHeading title="History" />
         </>)

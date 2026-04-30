@@ -27,8 +27,6 @@ declare global {
         frequency?: string;
         renewalDate?: string;
         color?: string;
-        isIcon?: boolean;
-        extraClass?: string;
     }
 
     interface SubscriptionCardProps extends Omit<Subscription, "id"> {
@@ -36,6 +34,8 @@ declare global {
         onPress: () => void;
         onCancelPress?: () => void;
         isCancelling?: boolean;
+        isIcon?: boolean;
+        extraClass?: string;
     }
 
     interface UpcomingSubscription {
