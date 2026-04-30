@@ -1,15 +1,26 @@
 import { useSignIn } from "@clerk/expo";
 import { type Href, Link, useRouter } from "expo-router";
 import { styled } from "nativewind";
+import { usePostHog } from "posthog-react-native";
 import React, { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 
 const SafeAreaView = styled(RNSafeAreaView);
 
+// Helper function to hash email for PII-safe event tracking
+const hashEmail = async (email: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(email);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+};
+
 export default function SignInPage() {
   const { signIn, errors, fetchStatus } = useSignIn();
   const router = useRouter();
+  const posthog = usePostHog();
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
@@ -22,19 +33,31 @@ export default function SignInPage() {
   const passwordValid = password.length > 0;
   const formValid = emailAddress.length > 0 && passwordValid && emailValid;
 
+
+
   const handleSubmit = async () => {
     if (!formValid) return;
+
+    // Hash email for PII-safe event tracking
+    const anonymousId = await hashEmail(emailAddress);
+    posthog?.capture('sign_in_attempt', { userId: anonymousId });
+
     const { error } = await signIn.password({
       emailAddress,
       password,
     });
 
     if (error) {
-      console.error(JSON.stringify(error, null, 2));
+      console.error('Sign-in error:', error.code || 'Unknown error');
+      posthog?.capture('sign_in_failed', {
+        userId: anonymousId,
+        errorCode: error.code || 'unknown'
+      });
       return;
     }
 
     if (signIn.status === "complete") {
+      posthog?.capture('sign_in_success', { userId: anonymousId });
       await signIn.finalize({
         navigate: ({ session, decorateUrl }) => {
           if (session?.currentTask) {
@@ -42,14 +65,14 @@ export default function SignInPage() {
             return;
           }
 
-          const url = decorateUrl('/(tabs)');
+          const url = decorateUrl('/');
           if (url.startsWith('http')) {
             // Only use window.location on web platform
             if (typeof window !== 'undefined' && window.location) {
               window.location.href = url;
             } else {
               // On native, just use router navigation
-              router.replace('/(tabs)' as Href);
+              router.replace('/' as Href);
             }
           } else {
             router.replace(url as Href);
@@ -83,14 +106,14 @@ export default function SignInPage() {
             return;
           }
 
-          const url = decorateUrl('/(tabs)');
+          const url = decorateUrl('/');
           if (url.startsWith('http')) {
             // Only use window.location on web platform
             if (typeof window !== 'undefined' && window.location) {
               window.location.href = url;
             } else {
               // On native, just use router navigation
-              router.replace('/(tabs)' as Href);
+              router.replace('/' as Href);
             }
           } else {
             router.replace(url as Href);
