@@ -8,7 +8,10 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "build:ios": "npx eas build --platform ios --profile production",
+    "build:android": "npx eas build --platform android --profile production",
+    "build:all": "npm run build:ios && npm run build:android"
   },
   "dependencies": {
     "@clerk/expo": "^3.2.4",
