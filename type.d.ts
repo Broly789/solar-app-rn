@@ -34,6 +34,8 @@ declare global {
         onPress: () => void;
         onCancelPress?: () => void;
         isCancelling?: boolean;
+        isIcon?: boolean;
+        extraClass?: string;
     }
 
     interface UpcomingSubscription {
