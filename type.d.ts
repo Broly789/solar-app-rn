@@ -27,6 +27,8 @@ declare global {
         frequency?: string;
         renewalDate?: string;
         color?: string;
+        isIcon?: boolean;
+        extraClass?: string;
     }
 
     interface SubscriptionCardProps extends Omit<Subscription, "id"> {

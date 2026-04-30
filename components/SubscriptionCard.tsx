@@ -3,15 +3,16 @@ import clsx from 'clsx'
 import React from 'react'
 import { Image, Pressable, Text, View } from 'react-native'
 
-const SubscriptionCard = ({ name, price, icon, category, plan, startDate, status, renewalDate, paymentMethod, color, currency, billing, expanded, onPress, ...props }: SubscriptionCardProps) => {
+const SubscriptionCard = ({ name, price, icon, category, plan, startDate, status, renewalDate, paymentMethod, color, currency, billing, expanded, onPress, extraClass = '', isIcon = true, ...props }: SubscriptionCardProps) => {
     const fallback = "Not provided"
     return (
         <Pressable className={clsx('sub-card',
-            expanded ? 'sub-card-expanded' : 'bg-card'
+            expanded ? 'sub-card-expanded' : 'bg-card',
+            extraClass
         )} style={!expanded && color ? { backgroundColor: color } : {}} onPress={onPress}>
             <View className='sub-head'>
                 <View className='sub-main'>
-                    <Image source={icon} className='sub-icon' resizeMode='contain' />
+                    {isIcon && <Image source={icon} className='sub-icon' resizeMode='contain' />}
                     <View className='sub-copy'>
                         <Text numberOfLines={1} className='sub-title'>{name}</Text>
                         <Text numberOfLines={1} ellipsizeMode='tail' className='sub-meta'>{
