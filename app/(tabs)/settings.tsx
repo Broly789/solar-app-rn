@@ -22,7 +22,7 @@ const Settings = () => {
                     className="settings-button"
                     onPress={async () => {
                         posthog.capture('user_signed_out', {
-                            email: user?.primaryEmailAddress?.emailAddress || '', // Add any other user-specific data you want to track
+                            user_id: user?.id || 'unknown', // Using user ID instead of email for privacy
                         });
                         try {
                             await signOut();

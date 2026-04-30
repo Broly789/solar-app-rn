@@ -3,6 +3,7 @@ import "@/global.css";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { styled } from "nativewind";
+import { usePostHog } from "posthog-react-native";
 import React, { useState } from "react";
 import {
     KeyboardAvoidingView,
@@ -56,6 +57,7 @@ const CreateSubscriptionModal: React.FC<CreateSubscriptionModalProps> = ({
     const [category, setCategory] = useState("Entertainment");
     const [errors, setErrors] = useState<Record<string, string>>({});
 
+    const posthog = usePostHog();
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
 
@@ -104,6 +106,13 @@ const CreateSubscriptionModal: React.FC<CreateSubscriptionModalProps> = ({
         };
 
         onSubmit(newSubscription);
+        posthog.capture("subscription_created", {
+            subscription_name: newSubscription.name,
+            subscription_id: newSubscription.id,
+            category: newSubscription.category!,
+            price: newSubscription.price,
+            frequency: newSubscription.frequency!,
+        });
         resetForm();
         onClose();
     };

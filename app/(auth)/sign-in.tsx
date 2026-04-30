@@ -8,6 +8,15 @@ import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 
 const SafeAreaView = styled(RNSafeAreaView);
 
+// Helper function to hash email for PII-safe event tracking
+const hashEmail = async (email: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(email);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+};
+
 export default function SignInPage() {
   const { signIn, errors, fetchStatus } = useSignIn();
   const router = useRouter();
@@ -29,7 +38,9 @@ export default function SignInPage() {
   const handleSubmit = async () => {
     if (!formValid) return;
 
-    posthog?.capture('sign_in_attempt', { email: emailAddress });
+    // Hash email for PII-safe event tracking
+    const anonymousId = await hashEmail(emailAddress);
+    posthog?.capture('sign_in_attempt', { userId: anonymousId });
 
     const { error } = await signIn.password({
       emailAddress,
@@ -37,16 +48,16 @@ export default function SignInPage() {
     });
 
     if (error) {
-      console.error(JSON.stringify(error, null, 2));
+      console.error('Sign-in error:', error.code || 'Unknown error');
       posthog?.capture('sign_in_failed', {
-        email: emailAddress,
-        error_message: error.message
+        userId: anonymousId,
+        errorCode: error.code || 'unknown'
       });
       return;
     }
 
     if (signIn.status === "complete") {
-      posthog?.capture('sign_in_success', { email: emailAddress });
+      posthog?.capture('sign_in_success', { userId: anonymousId });
       await signIn.finalize({
         navigate: ({ session, decorateUrl }) => {
           if (session?.currentTask) {

@@ -34,7 +34,7 @@ export default function SignUpPage() {
   const handleSubmit = async () => {
     if (!formValid) return;
 
-    posthog?.capture('sign_up_attempt', { email: emailAddress });
+    posthog?.capture('sign_up_attempt');
 
     const { error } = await signUp.create({
       emailAddress,
@@ -43,15 +43,26 @@ export default function SignUpPage() {
 
     if (error) {
       console.error(JSON.stringify(error, null, 2));
+      // Determine error category based on the error type
+      let errorCategory = 'unknown_error';
+      if (error.message.includes('already') || error.message.includes('exist')) {
+        errorCategory = 'validation_error_duplicate';
+      } else if (error.message.includes('invalid') || error.message.includes('format')) {
+        errorCategory = 'validation_error_format';
+      } else if (error.message.includes('password')) {
+        errorCategory = 'validation_error_password';
+      } else {
+        errorCategory = 'server_error';
+      }
+
       posthog?.capture('sign_up_failed', {
-        email: emailAddress,
-        error_message: error.message,
+        error_category: errorCategory,
       });
       return;
     }
 
     // 发送邮箱验证码
-    posthog?.capture('sign_up_success', { email: emailAddress });
+    posthog?.capture('sign_up_success');
     await signUp.verifications.sendEmailCode();
     startResendCountdown();
   };

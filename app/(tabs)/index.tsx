@@ -24,10 +24,9 @@ export default function Index() {
   const { user } = useUser();
   const posthog = usePostHog()
   useEffect(() => {
-    posthog?.capture("home_open", {
-      email: user?.primaryEmailAddress?.emailAddress || '',
-    })
-  }, [posthog])
+    if (!posthog) return;
+    posthog?.capture("home_open");
+  }, [])
 
   const handleSubscriptionPress = (item: Subscription) => {
     const isExpanding = expandedSubscriptionId !== item.id;
